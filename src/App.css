@@ -205,3 +205,20 @@ hr {
 .open-button:hover {
   opacity: 1;
 }
+
+/* src/components/Sidebar.css */
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: -250px; /* Initially hidden off-screen */
+  width: 250px;
+  height: 100%;
+  background-color: #333;
+  color: white;
+  transition: right 0.3s ease; /* Smooth transition */
+  padding: 20px;
+}
+
+.sidebar.visible {
+  right: 0; /* Slide in */
+}

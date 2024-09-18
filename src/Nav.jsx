@@ -1,7 +1,8 @@
-import React from "react"; // Import the CSS file
+// src/Nav.js
+import React from "react";
 import Button from "./Button";
 
-function Nav() {
+const Nav = ({ setView }) => {
   return (
     <nav className="nav" aria-label="breadcrumb" style={{ width: "100%" }}>
       <ol
@@ -18,10 +19,13 @@ function Nav() {
           <div>
             <Button name={"New Launch"} />
           </div>
+          <div>
+            <button onClick={() => setView("shop")}>Shop</button>
+          </div>
         </li>
       </ol>
     </nav>
   );
-}
+};
 
 export default Nav;

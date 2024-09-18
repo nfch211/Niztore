@@ -1,6 +1,7 @@
+// src/Header.js
 import React from "react";
 
-function Header({ login, username }) {
+function Header({ login, username, setView }) {
   return (
     <header className="header p-3 text-bg-dark">
       <div className="container">
@@ -82,6 +83,28 @@ function Header({ login, username }) {
               </>
             )}
           </div>
+
+          <button
+            onClick={() => setView("shop")}
+            type="button"
+            className="btn btn-info ms-3"
+          >
+            Shop
+          </button>
+          <button
+            onClick={() => setView("catalogue")}
+            type="button"
+            className="btn btn-info ms-3"
+          >
+            Catalogue
+          </button>
+          <button
+            onClick={() => setView("orders")}
+            type="button"
+            className="btn btn-info ms-3"
+          >
+            Orders
+          </button>
         </div>
       </div>
     </header>

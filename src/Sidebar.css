@@ -1,0 +1,84 @@
+/* src/Sidebar.css */
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: -250px; /* Initially hidden off-screen */
+  width: 250px;
+  height: 100%;
+  background-color: #333;
+  color: white;
+  transition: right 0.3s ease; /* Smooth transition */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sidebar.visible {
+  right: 0; /* Slide in */
+}
+
+.product-list {
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.product-box {
+  background-color: #444;
+  border: 1px solid #555;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.product-box p {
+  margin: 5px 0;
+}
+
+.quantity-input {
+  width: 100%;
+  padding: 5px;
+  margin-bottom: 10px;
+  border: 1px solid #555;
+  border-radius: 5px;
+  background-color: #555;
+  color: white;
+}
+
+.product-box button {
+  background-color: #ff4d4d;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.product-box button:hover {
+  background-color: #ff1a1a;
+}
+
+.confirm-section {
+  padding: 10px 0;
+  text-align: center;
+}
+
+.confirm-section button {
+  background-color: #4caf50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.confirm-section button:hover {
+  background-color: #45a049;
+}
+
+.success-message {
+  color: #4caf50;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
