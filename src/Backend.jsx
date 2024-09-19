@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect } from "react";
 
 export default function Backend({ accessBackend, query }) {
   const apiUrl =
@@ -8,21 +7,22 @@ export default function Backend({ accessBackend, query }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(apiUrl, {
-          withCredentials: false, // Include credentials if needed
+        const response = await fetch(apiUrl, {
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
         });
-        accessBackend(response.data);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        accessBackend(data);
       } catch (error) {
         console.error("Error fetching data:", error);
-        if (error.response) {
-          console.error("Response data:", error.response.data);
-          console.error("Response status:", error.response.status);
-          console.error("Response headers:", error.response.headers);
-        }
       }
     };
 
