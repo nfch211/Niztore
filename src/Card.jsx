@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function Card({
   productname,
@@ -10,13 +10,50 @@ function Card({
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
+  const [loadingState, setLoadingState] = useState("initial"); // 'initial', 'skeleton', 'loaded'
+
+  useEffect(() => {
+    // Simulate delay before showing skeleton
+    const skeletonTimer = setTimeout(() => {
+      setLoadingState("skeleton");
+    }, 500); // Adjust this value based on your needs
+
+    // Simulate API response delay
+    const contentTimer = setTimeout(() => {
+      setLoadingState("loaded");
+    }, 3000); // Adjust this value to match your actual loading time
+
+    return () => {
+      clearTimeout(skeletonTimer);
+      clearTimeout(contentTimer);
+    };
+  }, []);
 
   function handleBuySVGonClick() {
     if (isLoggedIn) {
       onProductSelect(productname, productprice);
       setIsClicked(true);
-      setTimeout(() => setIsClicked(false), 300); // Reset after 300ms
+      setTimeout(() => setIsClicked(false), 300);
     }
+  }
+
+  if (loadingState === "initial") {
+    return (
+      <div className="product container hovernow initial-loading">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  if (loadingState === "skeleton") {
+    return (
+      <div className="product container hovernow skeleton-card">
+        <div className="skeleton-name"></div>
+        <div className="skeleton-image"></div>
+        <div className="skeleton-description"></div>
+        <div className="skeleton-price"></div>
+      </div>
+    );
   }
 
   return (

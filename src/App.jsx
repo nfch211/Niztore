@@ -10,6 +10,7 @@ import Orders from "./Orders";
 
 function App() {
   const [backendData, setBackendData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSidebarVisible, setSidebarVisible] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [confirmedProducts, setConfirmedProducts] = useState([]);
@@ -34,8 +35,10 @@ function App() {
   function getDataFromBackend(data) {
     if (Array.isArray(data)) {
       setBackendData(data);
+      setIsLoading(false);
     } else {
       console.error("Received data is not an array:", data);
+      setIsLoading(false);
     }
   }
 
@@ -112,6 +115,14 @@ function App() {
 
   return (
     <>
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="spinner"></div>
+            <p>Loading products...</p>
+          </div>
+        </div>
+      )}
       <Backend accessBackend={getDataFromBackend} query={query} />
       <Header
         setView={setView}

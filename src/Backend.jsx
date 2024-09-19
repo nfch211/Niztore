@@ -23,11 +23,12 @@ export default function Backend({ accessBackend, query }) {
         accessBackend(data);
       } catch (error) {
         console.error("Error fetching data:", error);
+        accessBackend([]); // Call accessBackend with empty array to indicate loading is complete
       }
     };
 
     fetchData();
-  }, [accessBackend]); // Ensure dependencies are correct
+  }, [accessBackend]);
 
   return null;
 }
