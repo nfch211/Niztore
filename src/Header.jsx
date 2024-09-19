@@ -1,7 +1,17 @@
-// src/Header.js
 import React from "react";
 
-function Header({ login, username, setView }) {
+function Header({ login, username, setView, onLogin, onSignUp, onSignOut }) {
+  const navItems = [
+    { label: "About", href: "#", className: "nav-link px-2 text-secondary" },
+    { label: "FAQ", href: "#", className: "nav-link px-2 text-white" },
+  ];
+
+  const viewButtons = [
+    { label: "Shop", view: "shop" },
+    { label: "Catalogue", view: "catalogue" },
+    { label: "Orders", view: "orders" },
+  ];
+
   return (
     <header className="header p-3 text-bg-dark">
       <div className="container">
@@ -22,31 +32,13 @@ function Header({ login, username, setView }) {
           </a>
 
           <ul className="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-            <li>
-              <a href="#" className="nav-link px-2 text-secondary">
-                Home
-              </a>
-            </li>
-            <li>
-              <a href="#" className="nav-link px-2 text-white">
-                Features
-              </a>
-            </li>
-            <li>
-              <a href="#" className="nav-link px-2 text-white">
-                Pricing
-              </a>
-            </li>
-            <li>
-              <a href="#" className="nav-link px-2 text-white">
-                FAQs
-              </a>
-            </li>
-            <li>
-              <a href="#" className="nav-link px-2 text-white">
-                About
-              </a>
-            </li>
+            {navItems.map((item, index) => (
+              <li key={index}>
+                <a href={item.href} className={item.className}>
+                  {item.label}
+                </a>
+              </li>
+            ))}
           </ul>
 
           <form
@@ -63,18 +55,41 @@ function Header({ login, username, setView }) {
 
           <div className="text-end">
             {login ? (
-              <p>Welcome back, {username}!</p>
+              <>
+                <span className="me-3 text-white">
+                  Welcome back, {username}!
+                </span>
+                <button
+                  onClick={onSignOut}
+                  type="button"
+                  className="btn btn-outline-light me-4"
+                >
+                  Sign Out
+                </button>
+                <div className="d-inline-block">
+                  {viewButtons.map((button, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setView(button.view)}
+                      type="button"
+                      className="btn btn-info ms-2"
+                    >
+                      {button.label}
+                    </button>
+                  ))}
+                </div>
+              </>
             ) : (
               <>
                 <button
-                  onClick={() => openLoginForm()}
+                  onClick={onLogin}
                   type="button"
                   className="btn btn-outline-light me-2"
                 >
                   Login
                 </button>
                 <button
-                  onClick={() => openSignUpForm()}
+                  onClick={onSignUp}
                   type="button"
                   className="btn btn-warning"
                 >
@@ -83,28 +98,6 @@ function Header({ login, username, setView }) {
               </>
             )}
           </div>
-
-          <button
-            onClick={() => setView("shop")}
-            type="button"
-            className="btn btn-info ms-3"
-          >
-            Shop
-          </button>
-          <button
-            onClick={() => setView("catalogue")}
-            type="button"
-            className="btn btn-info ms-3"
-          >
-            Catalogue
-          </button>
-          <button
-            onClick={() => setView("orders")}
-            type="button"
-            className="btn btn-info ms-3"
-          >
-            Orders
-          </button>
         </div>
       </div>
     </header>

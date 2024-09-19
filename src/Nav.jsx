@@ -19,9 +19,6 @@ const Nav = ({ setView }) => {
           <div>
             <Button name={"New Launch"} />
           </div>
-          <div>
-            <button onClick={() => setView("shop")}>Shop</button>
-          </div>
         </li>
       </ol>
     </nav>

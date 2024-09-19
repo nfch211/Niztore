@@ -2,20 +2,44 @@
 .sidebar {
   position: fixed;
   top: 0;
-  right: -250px; /* Initially hidden off-screen */
-  width: 250px;
+  right: 0;
+  width: 20px; /* Thin bar width */
   height: 100%;
   background-color: #333;
   color: white;
-  transition: right 0.3s ease; /* Smooth transition */
+  transition: width 0.3s ease; /* Smooth transition */
+  overflow: hidden;
+}
+
+.sidebar.visible {
+  width: 250px; /* Full sidebar width */
+}
+
+.sidebar-indicator {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sidebar-indicator span {
+  color: white;
+  font-weight: bold;
+}
+
+.sidebar-content {
+  width: 250px;
+  height: 100%;
   padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-}
-
-.sidebar.visible {
-  right: 0; /* Slide in */
 }
 
 .product-list {

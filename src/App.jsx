@@ -1,5 +1,4 @@
-// src/App.js
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import Header from "./Header";
 import Card from "./Card";
@@ -11,30 +10,25 @@ import Orders from "./Orders";
 
 function App() {
   const [backendData, setBackendData] = useState([]);
-  const query = "select * from customer";
-
   const [isSidebarVisible, setSidebarVisible] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState([]);
-  const [confirmedProducts, setConfirmedProducts] = useState([]); // New state for confirmed products
-  const [orders, setOrders] = useState([]); // New state for orders
+  const [confirmedProducts, setConfirmedProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
-  const [view, setView] = useState("shop"); // New state to manage the view
+  const [view, setView] = useState("shop");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+
+  const query = "select * from customer";
 
   useEffect(() => {
     const handleMouseMove = (event) => {
       const screenWidth = window.innerWidth;
-      if (event.clientX > screenWidth - 50) {
-        setSidebarVisible(true);
-      } else if (event.clientX < screenWidth - 300) {
-        setSidebarVisible(false);
-      }
+      setSidebarVisible(event.clientX > screenWidth - 50);
     };
 
     document.addEventListener("mousemove", handleMouseMove);
-
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-    };
+    return () => document.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   function getDataFromBackend(data) {
@@ -65,9 +59,12 @@ function App() {
     }, {});
     console.log(productDict);
     setSuccessMessage("Products confirmed successfully!");
-    setConfirmedProducts(selectedProducts); // Store confirmed products
+    setConfirmedProducts((prevProducts) => [
+      ...prevProducts,
+      ...selectedProducts,
+    ]);
     setSelectedProducts([]);
-    setTimeout(() => setSuccessMessage(""), 3000); // Clear message after 3 seconds
+    setTimeout(() => setSuccessMessage(""), 3000);
   }
 
   function handleCatalogueRemove(index) {
@@ -90,46 +87,74 @@ function App() {
     setSuccessMessage("Payment successful!");
     setConfirmedProducts([]);
     console.log("Order Details:", newOrder);
-    setTimeout(() => setSuccessMessage(""), 3000); // Clear message after 3 seconds
+    setTimeout(() => setSuccessMessage(""), 3000);
+  }
+
+  function handleLogin() {
+    setIsLoggedIn(true);
+    setUsername("User"); // You can replace this with actual username logic
+    console.log("User logged in");
+  }
+
+  function handleSignUp() {
+    // Implement sign up logic here
+    console.log("Sign up clicked");
+  }
+
+  function handleSignOut() {
+    setIsLoggedIn(false);
+    setUsername("");
+    setSelectedProducts([]);
+    setConfirmedProducts([]);
+    setView("shop"); // Reset view to shop on sign out
+    console.log("User signed out");
   }
 
   return (
     <>
       <Backend accessBackend={getDataFromBackend} query={query} />
-      <Header setView={setView} login={true} username="User" />
-      {view === "shop" ? (
-        <>
-          <Nav setView={setView} />
-          <Sidebar
-            isVisible={isSidebarVisible}
-            products={selectedProducts}
-            onRemove={handleProductRemove}
-            onConfirm={handleConfirm}
-            successMessage={successMessage}
-          />
-          <div className="displayarea container">
-            {backendData.map((product) => (
-              <Card
-                key={product.id} // Assuming each product has a unique id
-                productname={product.ProductName}
-                productprice={product.ProductPrice}
-                productdescription={product.ProductDescription}
-                productimage={product.ProductLink}
-                onProductSelect={handleProductSelect}
-              />
-            ))}
-          </div>
-        </>
-      ) : view === "catalogue" ? (
+      <Header
+        setView={setView}
+        login={isLoggedIn}
+        username={username}
+        onLogin={handleLogin}
+        onSignUp={handleSignUp}
+        onSignOut={handleSignOut}
+      />
+      {view === "shop" && <Nav setView={setView} />}
+      {isLoggedIn && (
+        <Sidebar
+          isVisible={isSidebarVisible}
+          products={selectedProducts}
+          onRemove={handleProductRemove}
+          onConfirm={handleConfirm}
+          successMessage={successMessage}
+        />
+      )}
+      {view === "shop" && (
+        <div className="displayarea container">
+          {backendData.map((product) => (
+            <Card
+              key={product.id}
+              productname={product.ProductName}
+              productprice={product.ProductPrice}
+              productdescription={product.ProductDescription}
+              productimage={product.ProductLink}
+              onProductSelect={handleProductSelect}
+              isLoggedIn={isLoggedIn}
+            />
+          ))}
+        </div>
+      )}
+      {view === "catalogue" && (
         <Catalogue
           products={confirmedProducts}
           onRemove={handleCatalogueRemove}
           onQuantityChange={handleQuantityChange}
           onPay={handlePay}
         />
-      ) : (
-        <Orders orders={orders} />
       )}
+      {view === "orders" && <Orders orders={orders} />}
     </>
   );
 }
