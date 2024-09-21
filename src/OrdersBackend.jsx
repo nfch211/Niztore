@@ -6,7 +6,8 @@ export default function OrdersBackend({
   postData = null,
   triggerFetch = false,
 }) {
-  const apiUrl = "http://localhost:8000/api/orders/";
+  const apiUrl =
+    "https://nicksrestapi-plan-sea-linux.azurewebsites.net/orders/";
 
   const fetchData = useCallback(async () => {
     if (!isLoggedIn) {

@@ -2,13 +2,16 @@
 const SignUpBackend = {
   submitSignUpCredential: async (profileData, handleSignUp, setSignUpError) => {
     try {
-      const response = await fetch("http://localhost:8000/api/profile/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(profileData),
-      });
+      const response = await fetch(
+        "https://nicksrestapi-plan-sea-linux.azurewebsites.net/profile/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(profileData),
+        }
+      );
 
       const data = await response.json();
 

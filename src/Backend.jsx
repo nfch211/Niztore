@@ -2,7 +2,8 @@ import React, { useEffect, useCallback, useState } from "react";
 
 export default function Backend({ accessBackend, query }) {
   const [lastFetchTime, setLastFetchTime] = useState(0);
-  const apiUrl = "http://localhost:8000/api/products/";
+  const apiUrl =
+    "hhttps://nicksrestapi-plan-sea-linux.azurewebsites.net/api/products/";
 
   const fetchData = useCallback(async () => {
     const currentTime = Date.now();
