@@ -33,6 +33,7 @@ function Login({
         flexDirection: "column",
         alignItems: "center",
         minHeight: "100vh",
+        paddingTop: "100px",
       }}
     >
       <div

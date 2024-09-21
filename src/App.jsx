@@ -171,8 +171,7 @@ function App() {
     setLoginError("");
     setLoginSuccess(false);
     console.log(`Login Email: ${loginEmail}, Password: ${loginPassword}`);
-    const url =
-      "https://nicksrestapi-plan-sea-linux.azurewebsites.net/api/login/";
+    const url = "http://localhost:8000/api/login/";
     const data = { email: loginEmail, password: loginPassword };
 
     try {
