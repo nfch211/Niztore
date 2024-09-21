@@ -1,12 +1,19 @@
-// src/Catalogue.js
 import React, { useState } from "react";
+import OrdersBackend from "./OrdersBackend";
 import "./Catalogue.css";
 
-const Catalogue = ({ products, onRemove, onQuantityChange, onPay }) => {
+const Catalogue = ({
+  products,
+  onRemove,
+  onQuantityChange,
+  isLoggedIn,
+  onPay,
+}) => {
   const [deliveryDate, setDeliveryDate] = useState("3days");
+  const [postData, setPostData] = useState(null);
 
   const totalPrice = products.reduce(
-    (total, product) => total + product.price * product.quantity,
+    (total, product) => total + parseFloat(product.price) * product.quantity,
     0
   );
   const deliveryCost = deliveryDate === "3days" ? 50 : 0;
@@ -31,6 +38,20 @@ const Catalogue = ({ products, onRemove, onQuantityChange, onPay }) => {
       minute: "2-digit",
     });
     const deliveryTime = getFormattedDate(deliveryDate === "3days" ? 3 : 7);
+
+    // Prepare individual orders for each product
+    const orders = products.map((product) => ({
+      OrderedProductName: product.name,
+      OrderedProductPrice: product.price,
+      OrderedProductQuantity: product.quantity,
+      DeliveryTime: deliveryTime,
+      PayDate: payDate,
+    }));
+
+    // Set the postData to trigger the post requests
+    setPostData(orders);
+
+    // Call the onPay function passed from the parent component
     onPay(products, payDate, deliveryTime);
   };
 
@@ -51,7 +72,9 @@ const Catalogue = ({ products, onRemove, onQuantityChange, onPay }) => {
                 type="number"
                 min="1"
                 value={product.quantity}
-                onChange={(e) => onQuantityChange(index, e.target.value)}
+                onChange={(e) =>
+                  onQuantityChange(index, parseInt(e.target.value, 10))
+                }
                 className="quantity-input"
               />
               <button onClick={() => onRemove(index)}>Delete</button>
@@ -81,7 +104,7 @@ const Catalogue = ({ products, onRemove, onQuantityChange, onPay }) => {
           </div>
           <div className="total-price">
             <p>
-              <strong>Total Price: {finalPrice} $ HKD</strong>
+              <strong>Total Price: {finalPrice.toFixed(2)} $ HKD</strong>
             </p>
           </div>
           <button className="pay-button" onClick={handlePay}>
@@ -89,6 +112,11 @@ const Catalogue = ({ products, onRemove, onQuantityChange, onPay }) => {
           </button>
         </div>
       )}
+      <OrdersBackend
+        setOrders={() => {}} // We don't need to set orders in Catalogue
+        isLoggedIn={isLoggedIn}
+        postData={postData}
+      />
     </div>
   );
 };

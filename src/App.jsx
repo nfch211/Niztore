@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import "./App.css";
 import Header from "./Header";
 import Card from "./Card";
@@ -7,6 +7,10 @@ import Backend from "./Backend";
 import Sidebar from "./Sidebar";
 import Catalogue from "./Catalogue";
 import Orders from "./Orders";
+import Login from "./Login";
+import SignUp from "./SignUp";
+import OrdersBackend from "./OrdersBackend";
+import SignUpBackend from "./SignUpBackend";
 
 function App() {
   const [backendData, setBackendData] = useState([]);
@@ -15,10 +19,20 @@ function App() {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [confirmedProducts, setConfirmedProducts] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loginSuccess, setLoginSuccess] = useState(false);
+  const [signUpError, setSignUpError] = useState("");
+  const [signUpSuccess, setSignUpSuccess] = useState(false);
   const [view, setView] = useState("shop");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [signUpEmail, setSignUpEmail] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
+  const [signUpName, setSignUpName] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [postOrderData, setPostOrderData] = useState(null);
 
   const query = "select * from customer";
 
@@ -85,23 +99,42 @@ function App() {
   }
 
   function handlePay(products, payDate, deliveryTime) {
-    const newOrder = { products, payDate, deliveryTime };
+    const newOrder = {
+      OrderedProductName: products.map((p) => p.name).join(", "),
+      OrderedProductPrice: products
+        .reduce((total, p) => total + parseFloat(p.price) * p.quantity, 0)
+        .toFixed(2),
+      OrderedProductQuantity: products.reduce(
+        (total, p) => total + p.quantity,
+        0
+      ),
+      DeliveryTime: deliveryTime,
+      PayDate: payDate,
+    };
     setOrders((prevOrders) => [...prevOrders, newOrder]);
     setSuccessMessage("Payment successful!");
     setConfirmedProducts([]);
     console.log("Order Details:", newOrder);
+    setPostOrderData(newOrder);
     setTimeout(() => setSuccessMessage(""), 3000);
   }
 
-  function handleLogin() {
+  function handleLogin(userData) {
     setIsLoggedIn(true);
-    setUsername("User"); // You can replace this with actual username logic
-    console.log("User logged in");
+    setUsername(userData.user_profile.name);
+    setLoginSuccess(true);
+    setView("shop");
+    localStorage.setItem("authToken", userData.access);
+    console.log("User logged in:", userData.access);
   }
 
-  function handleSignUp() {
-    // Implement sign up logic here
-    console.log("Sign up clicked");
+  function handleSignUp(userData) {
+    setIsLoggedIn(true);
+    setUsername(userData.name);
+    setSignUpSuccess(true);
+    setView("shop");
+    localStorage.setItem("authToken", userData.access);
+    console.log("User signed up:", userData.access);
   }
 
   function handleSignOut() {
@@ -109,9 +142,87 @@ function App() {
     setUsername("");
     setSelectedProducts([]);
     setConfirmedProducts([]);
-    setView("shop"); // Reset view to shop on sign out
+    setView("shop");
+    localStorage.removeItem("authToken");
     console.log("User signed out");
   }
+
+  function handleLoginEmailInput(e) {
+    setLoginEmail(e.target.value);
+  }
+
+  function handleLoginPasswordInput(e) {
+    setLoginPassword(e.target.value);
+  }
+
+  function handleSignUpEmailInput(e) {
+    setSignUpEmail(e.target.value);
+  }
+
+  function handleSignUpPasswordInput(e) {
+    setSignUpPassword(e.target.value);
+  }
+
+  function handleSignUpNameInput(e) {
+    setSignUpName(e.target.value);
+  }
+
+  async function submitUserCredential() {
+    setLoginError("");
+    setLoginSuccess(false);
+    console.log(`Login Email: ${loginEmail}, Password: ${loginPassword}`);
+    const url =
+      "https://nicksrestapi-plan-sea-linux.azurewebsites.net/api/login/";
+    const data = { email: loginEmail, password: loginPassword };
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.detail || "Login failed");
+      }
+
+      console.log("Response from server:", responseData);
+      handleLogin(responseData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setLoginError(
+        error.message ||
+          "Login failed. Please check your credentials and try again."
+      );
+    }
+  }
+
+  async function submitSignUpCredential(profileData) {
+    setSignUpError("");
+    setSignUpSuccess(false);
+    console.log("Profile Data:", profileData);
+
+    try {
+      const responseData = await SignUpBackend.submitSignUpCredential(
+        profileData,
+        handleSignUp,
+        setSignUpError
+      );
+      console.log("Response from server:", responseData);
+      setSignUpSuccess(true);
+    } catch (error) {
+      console.error("Error during sign up:", error);
+      // Error is already set by SignUpBackend, no need to set it again here
+    }
+  }
+
+  const getOrdersFromBackend = useCallback((data) => {
+    setOrders(data);
+  }, []);
 
   return (
     <>
@@ -128,12 +239,12 @@ function App() {
         setView={setView}
         login={isLoggedIn}
         username={username}
-        onLogin={handleLogin}
-        onSignUp={handleSignUp}
+        onLogin={() => setView("login")}
+        onSignUp={() => setView("signup")}
         onSignOut={handleSignOut}
       />
       {view === "shop" && <Nav setView={setView} />}
-      {isLoggedIn && (
+      {isLoggedIn && view === "shop" && (
         <Sidebar
           isVisible={isSidebarVisible}
           products={selectedProducts}
@@ -165,7 +276,44 @@ function App() {
           onPay={handlePay}
         />
       )}
-      {view === "orders" && <Orders orders={orders} />}
+      {view === "orders" && (
+        <Orders
+          orders={orders}
+          accessBackend={getOrdersFromBackend}
+          isLoggedIn={isLoggedIn}
+        />
+      )}
+      {view === "login" && (
+        <Login
+          HandleLoginEmail={handleLoginEmailInput}
+          HandleLoginPassword={handleLoginPasswordInput}
+          LoginEmail={loginEmail}
+          LoginPassword={loginPassword}
+          SubmitUserCredentials={submitUserCredential}
+          LoginError={loginError}
+          LoginSuccess={loginSuccess}
+        />
+      )}
+      {view === "signup" && (
+        <SignUp
+          HandleSignUpEmail={handleSignUpEmailInput}
+          HandleSignUpPassword={handleSignUpPasswordInput}
+          HandleSignUpName={handleSignUpNameInput}
+          SignUpEmail={signUpEmail}
+          SignUpPassword={signUpPassword}
+          SignUpName={signUpName}
+          SubmitSignUpCredentials={submitSignUpCredential}
+          SignUpError={signUpError}
+          SignUpSuccess={signUpSuccess}
+          handleSignUp={handleSignUp}
+          setSignUpError={setSignUpError}
+        />
+      )}
+      <OrdersBackend
+        accessBackend={getOrdersFromBackend}
+        isLoggedIn={isLoggedIn}
+        postData={postOrderData}
+      />
     </>
   );
 }
