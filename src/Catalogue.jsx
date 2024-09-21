@@ -11,7 +11,8 @@ const Catalogue = ({
 }) => {
   const [deliveryDate, setDeliveryDate] = useState("3days");
   const [postData, setPostData] = useState(null);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [getError, setGetError] = useState("");
   const totalPrice = products.reduce(
     (total, product) => total + parseFloat(product.price) * product.quantity,
     0
@@ -29,7 +30,8 @@ const Catalogue = ({
     });
   };
 
-  const handlePay = () => {
+  const handlePay = async () => {
+    setIsLoading(true);
     const payDate = new Date().toLocaleString("en-GB", {
       day: "numeric",
       month: "short",
@@ -48,11 +50,14 @@ const Catalogue = ({
       PayDate: payDate,
     }));
 
-    // Set the postData to trigger the post requests
-    setPostData(orders);
-
-    // Call the onPay function passed from the parent component
-    onPay(products, payDate, deliveryTime);
+    try {
+      setPostData(orders);
+      await onPay(products, payDate, deliveryTime);
+    } catch (error) {
+      setGetError(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -107,9 +112,22 @@ const Catalogue = ({
               <strong>Total Price: {finalPrice.toFixed(2)} $ HKD</strong>
             </p>
           </div>
-          <button className="pay-button" onClick={handlePay}>
-            Pay
+          <button
+            disabled={isLoading}
+            className="pay-button"
+            onClick={handlePay}
+          >
+            {isLoading ? (
+              <div className="loading-overlay">
+                <div className="loading-content">
+                  <div className="spinner"></div>
+                  <p>Loading...</p>
+                </div>
+              </div>
+            ) : null}
+            {isLoading ? "Paying" : "Pay"}
           </button>
+          {getError ? <p>{getError}</p> : null}
         </div>
       )}
       <OrdersBackend

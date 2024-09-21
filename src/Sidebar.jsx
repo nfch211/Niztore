@@ -7,9 +7,10 @@ const Sidebar = ({
   onRemove,
   onConfirm,
   successMessage,
+  onMouseEnter,
+  onMouseLeave,
 }) => {
   const [quantities, setQuantities] = useState(products.map(() => 1));
-  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     setQuantities(products.map(() => 1));
@@ -24,9 +25,9 @@ const Sidebar = ({
 
   return (
     <div
-      className={`sidebar ${isVisible || isHovered ? "visible" : ""}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className={`sidebar ${isVisible ? "visible" : ""}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <div className="sidebar-indicator">
         <span>&lt;</span>

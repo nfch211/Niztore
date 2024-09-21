@@ -105,7 +105,12 @@ function Login({
             }}
           >
             {isLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <div className="loading-overlay">
+                <div className="loading-content">
+                  <div className="spinner"></div>
+                  <p>Loading...</p>
+                </div>
+              </div>
             ) : null}
             {isLoading ? "Logging in..." : "Login"}
           </button>

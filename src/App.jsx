@@ -16,6 +16,7 @@ function App() {
   const [backendData, setBackendData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarVisible, setSidebarVisible] = useState(false);
+  const [isMouseOverSidebar, setIsMouseOverSidebar] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [confirmedProducts, setConfirmedProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -33,18 +34,67 @@ function App() {
   const [signUpName, setSignUpName] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [postOrderData, setPostOrderData] = useState(null);
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const [sidebarTimer, setSidebarTimer] = useState(null);
+  const [isCardClicked, setIsCardClicked] = useState(false);
 
   const query = "select * from customer";
+  const SIDEBAR_DETECTION_WIDTH = 150; // Increased from 50 to 150 pixels
+
+  const isSidebarEnabled = isLoggedIn && view === "shop";
 
   useEffect(() => {
     const handleMouseMove = (event) => {
+      if (!isSidebarEnabled) return;
       const screenWidth = window.innerWidth;
-      setSidebarVisible(event.clientX > screenWidth - 50);
+      if (
+        event.clientX > screenWidth - SIDEBAR_DETECTION_WIDTH &&
+        !isMouseOverSidebar
+      ) {
+        setSidebarVisible(true);
+      }
+    };
+
+    const handleClickOutside = (event) => {
+      if (!isSidebarEnabled) return;
+      if (!event.target.closest(".sidebar") && !event.target.closest(".card")) {
+        setIsCardClicked(false);
+        startSidebarTimer();
+      }
     };
 
     document.addEventListener("mousemove", handleMouseMove);
-    return () => document.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [isMouseOverSidebar, isSidebarEnabled]);
+
+  useEffect(() => {
+    return () => {
+      if (sidebarTimer) clearTimeout(sidebarTimer);
+    };
+  }, [sidebarTimer]);
+
+  useEffect(() => {
+    if (!isSidebarEnabled) {
+      setSidebarVisible(false);
+      setSelectedProducts([]);
+    }
+  }, [isSidebarEnabled]);
+
+  const startSidebarTimer = () => {
+    if (!isSidebarEnabled) return;
+    if (sidebarTimer) clearTimeout(sidebarTimer);
+    const timer = setTimeout(() => {
+      if (!isMouseOverSidebar && !isCardClicked) {
+        setSidebarVisible(false);
+      }
+    }, 3000);
+    setSidebarTimer(timer);
+  };
 
   function getDataFromBackend(data) {
     if (Array.isArray(data)) {
@@ -56,12 +106,20 @@ function App() {
     }
   }
 
-  function handleProductSelect(name, price) {
-    setSelectedProducts((prevProducts) => [
-      ...prevProducts,
-      { name, price, quantity: 1 },
-    ]);
-  }
+  const handleProductSelect = useCallback(
+    (name, price) => {
+      if (!isSidebarEnabled) return;
+      setSelectedProducts((prevProducts) => [
+        ...prevProducts,
+        { name, price, quantity: 1 },
+      ]);
+      setSidebarVisible(true);
+      setIsCardClicked(true);
+
+      if (sidebarTimer) clearTimeout(sidebarTimer);
+    },
+    [sidebarTimer, isSidebarEnabled]
+  );
 
   function handleProductRemove(index) {
     setSelectedProducts((prevProducts) =>
@@ -98,7 +156,8 @@ function App() {
     });
   }
 
-  function handlePay(products, payDate, deliveryTime) {
+  async function handlePay(products, payDate, deliveryTime) {
+    setIsPaymentLoading(true);
     const newOrder = {
       OrderedProductName: products.map((p) => p.name).join(", "),
       OrderedProductPrice: products
@@ -111,12 +170,19 @@ function App() {
       DeliveryTime: deliveryTime,
       PayDate: payDate,
     };
-    setOrders((prevOrders) => [...prevOrders, newOrder]);
-    setSuccessMessage("Payment successful!");
-    setConfirmedProducts([]);
-    console.log("Order Details:", newOrder);
-    setPostOrderData(newOrder);
-    setTimeout(() => setSuccessMessage(""), 3000);
+    try {
+      setOrders((prevOrders) => [...prevOrders, newOrder]);
+      setSuccessMessage("Payment successful!");
+      setConfirmedProducts([]);
+      console.log("Order Details:", newOrder);
+      setPostOrderData(newOrder);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error("Payment error:", error);
+    } finally {
+      setIsPaymentLoading(false);
+      setTimeout(() => setSuccessMessage(""), 3000);
+    }
   }
 
   function handleLogin(userData) {
@@ -209,7 +275,6 @@ function App() {
       setSignUpSuccess(true);
     } catch (error) {
       console.error("Error during sign up:", error);
-      // Error is already set by SignUpBackend, no need to set it again here
     }
   }
 
@@ -227,6 +292,23 @@ function App() {
       setIsLoading(false);
     }
   }
+
+  const handleSidebarMouseEnter = useCallback(() => {
+    if (!isSidebarEnabled) return;
+    setIsMouseOverSidebar(true);
+    if (sidebarTimer) {
+      clearTimeout(sidebarTimer);
+      setSidebarTimer(null);
+    }
+  }, [sidebarTimer, isSidebarEnabled]);
+
+  const handleSidebarMouseLeave = useCallback(() => {
+    if (!isSidebarEnabled) return;
+    setIsMouseOverSidebar(false);
+    if (!isCardClicked) {
+      startSidebarTimer();
+    }
+  }, [isCardClicked, isSidebarEnabled]);
 
   return (
     <>
@@ -248,13 +330,15 @@ function App() {
         onSignOut={handleSignOut}
       />
       {view === "shop" && <Nav setView={setView} />}
-      {isLoggedIn && view === "shop" && (
+      {isSidebarEnabled && (
         <Sidebar
           isVisible={isSidebarVisible}
           products={selectedProducts}
           onRemove={handleProductRemove}
           onConfirm={handleConfirm}
           successMessage={successMessage}
+          onMouseEnter={handleSidebarMouseEnter}
+          onMouseLeave={handleSidebarMouseLeave}
         />
       )}
       {view === "shop" && (
@@ -278,6 +362,7 @@ function App() {
           onRemove={handleCatalogueRemove}
           onQuantityChange={handleQuantityChange}
           onPay={handlePay}
+          isLoading={isPaymentLoading}
         />
       )}
       {view === "orders" && (

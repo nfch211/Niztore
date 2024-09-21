@@ -34,6 +34,20 @@ const Orders = ({ isLoggedIn }) => {
     );
   }, [orders, filterBy, selectedFilter]);
 
+  const groupedOrders = useMemo(() => {
+    const groups = {};
+    filteredOrders.forEach((order) => {
+      const key = `${order.DeliveryTime || "Not specified"}_${
+        order.PayDate || "Not specified"
+      }`;
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(order);
+    });
+    return groups;
+  }, [filteredOrders]);
+
   const handleFilterChange = (value) => {
     setFilterBy(value);
     setSelectedFilter(null);
@@ -41,6 +55,62 @@ const Orders = ({ isLoggedIn }) => {
 
   const handleFilterSelect = (value) => {
     setSelectedFilter(value);
+  };
+
+  const calculateTotalPrice = (groupOrders) => {
+    return groupOrders
+      .reduce((total, order) => {
+        const price = parseFloat(order.OrderedProductPrice) || 0;
+        const quantity = parseInt(order.OrderedProductQuantity) || 0;
+        return total + price * quantity;
+      }, 0)
+      .toFixed(2);
+  };
+
+  const renderOrderTable = (groupOrders, groupKey) => {
+    const [deliveryTime, payDate] = groupKey.split("_");
+    const totalPrice = calculateTotalPrice(groupOrders);
+
+    return (
+      <div key={groupKey} className="order-group">
+        <h3>
+          Delivery Time: {deliveryTime}, Pay Date: {payDate}
+        </h3>
+        <table className="order-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Product</th>
+              <th>Price (HKD)</th>
+              <th>Quantity</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {groupOrders.map((order) => {
+              const price = parseFloat(order.OrderedProductPrice) || 0;
+              const quantity = parseInt(order.OrderedProductQuantity) || 0;
+              const subtotal = (price * quantity).toFixed(2);
+              return (
+                <tr key={order.id}>
+                  <td>{order.id}</td>
+                  <td>{order.OrderedProductName}</td>
+                  <td>{order.OrderedProductPrice}</td>
+                  <td>{order.OrderedProductQuantity}</td>
+                  <td>{subtotal}</td>
+                </tr>
+              );
+            })}
+            <tr className="total-row">
+              <td colSpan="4" className="total-label">
+                Total
+              </td>
+              <td className="total-price">{totalPrice} HKD</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
   };
 
   return (
@@ -55,6 +125,7 @@ const Orders = ({ isLoggedIn }) => {
           {isFetching ? "Fetching..." : "Fetch Orders"}
         </button>
         <div className="filter-controls">
+          <label>Filter:</label>
           <select
             className="filter-select"
             value={filterBy}
@@ -94,30 +165,10 @@ const Orders = ({ isLoggedIn }) => {
       ) : filteredOrders.length === 0 ? (
         <p className="no-orders">No orders found.</p>
       ) : (
-        <div className="order-list">
-          {filteredOrders.map((order) => (
-            <div key={order.id} className="order-item">
-              <h3 className="order-id">Order ID: {order.id}</h3>
-              <div className="order-details">
-                <p>
-                  <strong>Product:</strong> {order.OrderedProductName}
-                </p>
-                <p>
-                  <strong>Price:</strong> {order.OrderedProductPrice} HKD
-                </p>
-                <p>
-                  <strong>Quantity:</strong> {order.OrderedProductQuantity}
-                </p>
-                <p>
-                  <strong>Delivery Time:</strong>{" "}
-                  {order.DeliveryTime || "Not specified"}
-                </p>
-                <p>
-                  <strong>Pay Date:</strong> {order.PayDate || "Not specified"}
-                </p>
-              </div>
-            </div>
-          ))}
+        <div className="order-groups">
+          {Object.entries(groupedOrders).map(([groupKey, groupOrders]) =>
+            renderOrderTable(groupOrders, groupKey)
+          )}
         </div>
       )}
     </div>

@@ -10,18 +10,16 @@ function Card({
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
-  const [loadingState, setLoadingState] = useState("initial"); // 'initial', 'skeleton', 'loaded'
+  const [loadingState, setLoadingState] = useState("initial");
 
   useEffect(() => {
-    // Simulate delay before showing skeleton
     const skeletonTimer = setTimeout(() => {
       setLoadingState("skeleton");
-    }, 500); // Adjust this value based on your needs
+    }, 500);
 
-    // Simulate API response delay
     const contentTimer = setTimeout(() => {
       setLoadingState("loaded");
-    }, 3000); // Adjust this value to match your actual loading time
+    }, 3000);
 
     return () => {
       clearTimeout(skeletonTimer);
@@ -29,11 +27,17 @@ function Card({
     };
   }, []);
 
-  function handleBuySVGonClick() {
+  function handleCardClick() {
     if (isLoggedIn) {
       onProductSelect(productname, productprice);
       setIsClicked(true);
       setTimeout(() => setIsClicked(false), 300);
+
+      // Simulate sidebar behavior
+      document.querySelector(".sidebar").classList.add("visible");
+      setTimeout(() => {
+        document.querySelector(".sidebar").classList.remove("visible");
+      }, 2000);
     }
   }
 
@@ -57,7 +61,16 @@ function Card({
   }
 
   return (
-    <div className="product container hovernow">
+    <div
+      className={`product container hovernow ${isClicked ? "clicked" : ""}`}
+      onClick={handleCardClick}
+      style={{
+        cursor: isLoggedIn ? "pointer" : "not-allowed",
+        opacity: isLoggedIn ? 1 : 0.5,
+        transition: "all 0.3s ease",
+        transform: isClicked ? "scale(0.98)" : "scale(1)",
+      }}
+    >
       <div className="product-name" style={{ height: "60px" }}>
         <h1 style={{ fontSize: "1vw", color: "rgb(94, 230, 230)" }}>
           {productname}
@@ -83,14 +96,13 @@ function Card({
               height="30"
               fill={isLoggedIn && isHovered ? "blue" : "currentColor"}
               viewBox="0 0 16 16"
-              onClick={handleBuySVGonClick}
               onMouseEnter={() => isLoggedIn && setIsHovered(true)}
               onMouseLeave={() => isLoggedIn && setIsHovered(false)}
               style={{
                 transition: "all 0.3s ease",
                 transform: isClicked ? "scale(0.9)" : "scale(1)",
                 opacity: isLoggedIn ? 1 : 0.5,
-                cursor: isLoggedIn ? "pointer" : "not-allowed",
+                pointerEvents: isLoggedIn ? "auto" : "none",
               }}
             >
               <path d="M0 2.5A.5.5 0 0 1 .5 2H2a.5.5 0 0 1 .485.379L2.89 4H14.5a.5.5 0 0 1 .485.621l-1.5 6A.5.5 0 0 1 13 11H4a.5.5 0 0 1-.485-.379L1.61 3H.5a.5.5 0 0 1-.5-.5M3.14 5l.5 2H5V5zM6 5v2h2V5zm3 0v2h2V5zm3 0v2h1.36l.5-2zm1.11 3H12v2h.61zM11 8H9v2h2zM8 8H6v2h2zM5 8H3.89l.5 2H5zm0 5a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0m9-1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0" />

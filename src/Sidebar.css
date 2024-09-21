@@ -106,3 +106,61 @@
   font-weight: bold;
   margin-bottom: 10px;
 }
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 300px;
+  background-color: rgba(255, 255, 255, 0.5);
+  transform: translateX(100%);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.sidebar.visible {
+  transform: translateX(0);
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.sidebar:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.sidebar-content {
+  padding: 20px;
+  color: black;
+}
+
+.sidebar h2,
+.sidebar p,
+.sidebar input,
+.sidebar button {
+  opacity: 1;
+}
+
+.sidebar-indicator {
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 10px;
+  cursor: pointer;
+}
+
+.product.container {
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.product.container.clicked {
+  transform: scale(0.98);
+}
+
+.buy-svg {
+  pointer-events: none;
+}

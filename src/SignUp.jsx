@@ -23,6 +23,7 @@ const SignUp = ({
   const [address, setAddress] = useState("");
   const [contactError, setContactError] = useState("");
   const [addressError, setAddressError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     let isValid = true;
@@ -54,6 +55,7 @@ const SignUp = ({
   };
 
   const handleSubmit = async (e) => {
+    setIsLoading(true);
     e.preventDefault();
 
     if (!validateForm()) {
@@ -70,7 +72,13 @@ const SignUp = ({
       address,
     };
 
-    SubmitSignUpCredentials(profileData);
+    try {
+      await SubmitSignUpCredentials(profileData);
+    } catch (error) {
+      console.error("Login failed:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -93,22 +101,6 @@ const SignUp = ({
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            {SignUpError && (
-              <div
-                className="bg-red-50 border-l-4 border-red-400 p-4 mb-6"
-                role="alert"
-              >
-                <p className="text-sm text-red-700">{SignUpError}</p>
-              </div>
-            )}
-            {SignUpSuccess && (
-              <div
-                className="bg-green-50 border-l-4 border-green-400 p-4 mb-6"
-                role="alert"
-              >
-                <p className="text-sm text-green-700">Sign up successful!</p>
-              </div>
-            )}
             <form
               onSubmit={handleSubmit}
               className="space-y-6"
@@ -293,14 +285,45 @@ const SignUp = ({
 
               <div style={{ paddingTop: "20px", textAlign: "center" }}>
                 <button
+                  disabled={isLoading}
                   type="submit"
                   style={{ backgroundColor: "gray" }}
                   className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  Sign Up
+                  {isLoading ? (
+                    <div className="loading-overlay">
+                      <div className="loading-content">
+                        <div className="spinner"></div>
+                        <p>Loading...</p>
+                      </div>
+                    </div>
+                  ) : null}
+                  {isLoading ? "Signing up" : "Sign Up"}
                 </button>
               </div>
             </form>
+
+            <div
+              className="bg-red-50 border-l-4 border-red-400 p-4 mb-6"
+              role="alert"
+              style={{ display: "flex", justifyContent: "center" }}
+            >
+              {SignUpError && (
+                <p className="text-sm text-red-700">
+                  <strong style={{ color: "red" }}>{SignUpError}</strong>
+                </p>
+              )}
+              {SignUpSuccess && (
+                <p className="text-sm text-red-700">
+                  <strong style={{ color: "green", textAlign: "center" }}>
+                    Sign up sucessfully!
+                  </strong>
+                </p>
+              )}
+              {!SignUpError && !SignUpSuccess && (
+                <p className="text-sm text-red-700"></p>
+              )}
+            </div>
           </div>
         </div>
       </div>
