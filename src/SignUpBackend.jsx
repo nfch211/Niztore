@@ -3,7 +3,7 @@ const SignUpBackend = {
   submitSignUpCredential: async (profileData, handleSignUp, setSignUpError) => {
     try {
       const response = await fetch(
-        "https://nicksrestapi-plan-sea-linux.azurewebsites.net/profile/",
+        "https://nicksrestapi-plan-sea-linux.azurewebsites.net/api/profile/",
         {
           method: "POST",
           headers: {
