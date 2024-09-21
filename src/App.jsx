@@ -128,15 +128,6 @@ function App() {
     console.log("User logged in:", userData.access);
   }
 
-  function handleSignUp(userData) {
-    setIsLoggedIn(true);
-    setUsername(userData.name);
-    setSignUpSuccess(true);
-    setView("shop");
-    localStorage.setItem("authToken", userData.access);
-    console.log("User signed up:", userData.access);
-  }
-
   function handleSignOut() {
     setIsLoggedIn(false);
     setUsername("");
@@ -204,6 +195,8 @@ function App() {
   async function submitSignUpCredential(profileData) {
     setSignUpError("");
     setSignUpSuccess(false);
+    setLoginEmail(profileData.email);
+    setLoginPassword(profileData.password);
     console.log("Profile Data:", profileData);
 
     try {
@@ -223,6 +216,17 @@ function App() {
   const getOrdersFromBackend = useCallback((data) => {
     setOrders(data);
   }, []);
+
+  async function handleSignUp(userData) {
+    setSignUpSuccess(true);
+    try {
+      await submitUserCredential();
+    } catch (error) {
+      console.error("Login failed:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <>
